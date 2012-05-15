@@ -41,6 +41,7 @@ import java.io.Reader;
  * </p>
  * <p><em>Original author: Robert Harder, rharder@usa.net</em></p>
  * <p>2007-09-12 Nathan Blomquist -- Linux (KDE/Gnome) support added.</p>
+ * <p>2012-05-15 Redwarp -- Modify the code to get drag in and out callback
  *
  * @author  Robert Harder
  * @author  rharder@users.sf.net
@@ -77,9 +78,6 @@ public class FileDrop
               true, // Recursive
               listener );
     }   // end constructor
-    
-    
-    
     
     /**
      * Constructor with a default border and the option to recursively set drop targets.
