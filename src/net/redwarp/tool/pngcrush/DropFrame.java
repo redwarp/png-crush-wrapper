@@ -22,6 +22,7 @@ import java.awt.Component;
 import java.awt.ComponentOrientation;
 import java.awt.Dimension;
 import java.awt.GridLayout;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -34,15 +35,15 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 import javax.swing.filechooser.FileFilter;
-import javax.swing.JMenuBar;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
 
 import net.iharder.dnd.FileDrop;
 
@@ -51,7 +52,9 @@ public class DropFrame extends JFrame {
 	JButton arrow;
 	ExecutorService service = Executors.newSingleThreadExecutor();
 	JFileChooser fileChooser;
-
+	ImageIcon blueArrow;
+	ImageIcon redArrow;
+	
 	public DropFrame() {
 		fileChooser = new JFileChooser();
 		fileChooser.setMultiSelectionEnabled(true);
@@ -69,9 +72,13 @@ public class DropFrame extends JFrame {
 		});
 		fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 		
+		blueArrow = new ImageIcon(DropFrame.class.getResource("/img/blue-go-down-th.png"));
+		redArrow = new ImageIcon(DropFrame.class.getResource("/img/red-go-down-th.png"));
+		
 		setResizable(false);
 		setSize(new Dimension(600, 200));
 		setPreferredSize(new Dimension(100, 100));
+		setIconImage(Toolkit.getDefaultToolkit().getImage(DropFrame.class.getResource("/img/blue-go-down-th.png")));
 
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		getContentPane().setLayout(new BorderLayout(0, 0));
@@ -83,12 +90,12 @@ public class DropFrame extends JFrame {
 		dropZone.setLayout(new GridLayout(0, 1, 0, 0));
 
 		arrow = new JButton("");
-		arrow.setPressedIcon(new ImageIcon(DropFrame.class.getResource("/img/red-go-down-th.png")));
+		arrow.setPressedIcon(redArrow);
 		arrow.setFocusPainted(false);
 		arrow.setBorderPainted(false);
 		arrow.setBorder(null);
-		arrow.setIcon(new ImageIcon(DropFrame.class.getResource("/img/blue-go-down-th.png")));
-		arrow.setSelectedIcon(new ImageIcon(DropFrame.class.getResource("/img/red-go-down-th.png")));
+		arrow.setIcon(blueArrow);
+		arrow.setSelectedIcon(redArrow);
 		arrow.setContentAreaFilled(false);
 		arrow.setHorizontalAlignment(SwingConstants.CENTER);
 		arrow.setHorizontalTextPosition(SwingConstants.CENTER);
