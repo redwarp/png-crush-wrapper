@@ -125,20 +125,20 @@ public class DropFrame extends JFrame {
 		rightPanel.add(scrollPane);
 		
 
-		new FileDrop(dropZone, null, new FileDrop.Listener() {
+		new FileDrop<JPanel>(dropZone, null, new FileDrop.Listener<JPanel>() {
 
 			@Override
-			public void filesDropped(File[] fileList) {
-				handleFileList(fileList);
+			public void filesDropped(JPanel source, File[] files) {
+				handleFileList(files);
 			}
 
 			@Override
-			public void dragEnter() {
+			public void dragEnter(JPanel source) {
 				arrow.setSelected(true);
 			}
 
 			@Override
-			public void dragExit() {
+			public void dragExit(JPanel source) {
 				arrow.setSelected(false);
 			}
 		});
