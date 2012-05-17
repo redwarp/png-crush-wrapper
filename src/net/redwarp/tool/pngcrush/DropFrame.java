@@ -85,6 +85,7 @@ public class DropFrame extends JFrame {
 		setPreferredSize(new Dimension(100, 100));
 		setIconImage(Toolkit.getDefaultToolkit().getImage(
 				DropFrame.class.getResource("/img/blue-go-down-th.png")));
+		setLocation(50, 50);
 
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		getContentPane().setLayout(new BorderLayout(0, 0));
