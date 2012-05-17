@@ -54,7 +54,7 @@ class StreamGobbler extends Thread
             {
                 if (pw != null)
                     pw.println(line);
-                System.out.println(type + ">" + line);
+//                System.out.println(type + ">" + line);
             }
             if (pw != null)
                 pw.flush();

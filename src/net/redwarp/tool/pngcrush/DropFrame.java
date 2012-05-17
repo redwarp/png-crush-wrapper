@@ -144,6 +144,7 @@ public class DropFrame extends JFrame {
 		});
 
 		bruteForce = new JCheckBox("Brute force");
+		bruteForce.setEnabled(false);
 		bruteForce.setSelected(true);
 		getContentPane().add(bruteForce, BorderLayout.SOUTH);
 		

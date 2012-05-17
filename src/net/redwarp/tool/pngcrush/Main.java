@@ -17,14 +17,18 @@
  */
 package net.redwarp.tool.pngcrush;
 
+import java.io.IOException;
+
 
 public class Main {
 	public static void main(String[] args) {
 		DropFrame frame = new DropFrame();
 		frame.setVisible(true);
 
-		System.out.println(ClassLoader.getSystemClassLoader().getResource(".")
-				.getPath());
-
+		try {
+			System.out.println(Extractor.extractResource("/bin/pngout_07_02_2011.exe"));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 }
