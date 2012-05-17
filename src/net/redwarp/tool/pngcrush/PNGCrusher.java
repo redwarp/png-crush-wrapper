@@ -24,20 +24,25 @@ import java.net.URL;
 
 import javax.swing.SwingWorker;
 
-public class PNGCrusher extends SwingWorker<String, String> {
+import net.redwarp.tool.pngcrush.OperationStatus.Status;
+
+public class PNGCrusher extends SwingWorker<Void, OperationStatus> {
 	private File file;
+	private OperationStatus status;
 	private boolean bruteForce;
 	private static String exePath;
 	private static String pngOutPath;
 
-	public PNGCrusher(File file, boolean bruteForce) {
+	public PNGCrusher(OperationStatus status, boolean bruteForce) {
 		this.bruteForce = bruteForce;
-		this.file = file;
+		this.status = status;
+		this.file = status.getFile();
 	}
 
 	@Override
-	protected String doInBackground() throws Exception {
+	protected Void doInBackground() throws Exception {
 		pngout();
+		
 		return null;
 	}
 
@@ -60,90 +65,91 @@ public class PNGCrusher extends SwingWorker<String, String> {
 		init();
 	}
 
-	@SuppressWarnings("unused")
-	private void pngcrush() throws Exception {
-		if (file.getName().endsWith(".png")) {
-			publish("- " + file.getName() + "...");
-			String originalName = file.getAbsolutePath();
-			File tempFile = File.createTempFile("tempPng",
-					Long.toString(System.currentTimeMillis()));
-			tempFile.deleteOnExit();
-			String outputName = tempFile.getAbsolutePath();
-			try {
-				String cmd;
-				if (bruteForce) {
-					cmd = exePath + " -brute " + '"' + originalName + "\" \""
-							+ outputName + '"';
-				} else {
-					cmd = exePath + " " + '"' + originalName + "\" \""
-							+ outputName + '"';
-				}
-				System.out.println(cmd);
-				Process proc = Runtime.getRuntime().exec(cmd);
-
-				StreamGobbler outputGobbler = new StreamGobbler(
-						proc.getInputStream(), "OUTPUT");
-				StreamGobbler errorGobbler = new StreamGobbler(
-						proc.getErrorStream(), "ERROR");
-
-				outputGobbler.start();
-				errorGobbler.start();
-
-				try {
-					int result = proc.waitFor();
-					if (result == 0) {
-						publish(" done.");
-						File outputFile = tempFile;
-
-						URL url = file.toURI().toURL();
-						InputStream stream = url.openStream();
-						int initialFileSize = stream.available();
-						stream.close();
-
-						url = outputFile.toURI().toURL();
-						stream = url.openStream();
-						int finalFileSize = stream.available();
-						stream.close();
-
-						if (finalFileSize != 0
-								&& finalFileSize < initialFileSize) {
-							if (file.delete()) {
-								boolean rename = outputFile.renameTo(file);
-								if (rename) {
-									float reduction = (100f - 100f
-											* (float) finalFileSize
-											/ (float) initialFileSize);
-
-									publish(String.format("%.2f", reduction)
-											+ " % reduction\n");
-								} else {
-									publish(" couldn't cleanup\n");
-								}
-							} else {
-								publish(" couldn't cleanup\n");
-							}
-						} else {
-							publish("0 % reduction\n");
-							outputFile.delete();
-						}
-					} else {
-						System.out.println("Result : " + result);
-						publish(" aborted.\n");
-					}
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-					publish(" aborted.\n");
-				}
-			} catch (IOException e) {
-				e.printStackTrace();
-				publish(" aborted.\n");
-			}
-		}
-	}
+//	@SuppressWarnings("unused")
+//	private void pngcrush() throws Exception {
+//		if (file.getName().endsWith(".png")) {
+//			publish("- " + file.getName() + "...");
+//			String originalName = file.getAbsolutePath();
+//			File tempFile = File.createTempFile("tempPng",
+//					Long.toString(System.currentTimeMillis()));
+//			tempFile.deleteOnExit();
+//			String outputName = tempFile.getAbsolutePath();
+//			try {
+//				String cmd;
+//				if (bruteForce) {
+//					cmd = exePath + " -brute " + '"' + originalName + "\" \""
+//							+ outputName + '"';
+//				} else {
+//					cmd = exePath + " " + '"' + originalName + "\" \""
+//							+ outputName + '"';
+//				}
+//				System.out.println(cmd);
+//				Process proc = Runtime.getRuntime().exec(cmd);
+//
+//				StreamGobbler outputGobbler = new StreamGobbler(
+//						proc.getInputStream(), "OUTPUT");
+//				StreamGobbler errorGobbler = new StreamGobbler(
+//						proc.getErrorStream(), "ERROR");
+//
+//				outputGobbler.start();
+//				errorGobbler.start();
+//
+//				try {
+//					int result = proc.waitFor();
+//					if (result == 0) {
+//						publish(" done.");
+//						File outputFile = tempFile;
+//
+//						URL url = file.toURI().toURL();
+//						InputStream stream = url.openStream();
+//						int initialFileSize = stream.available();
+//						stream.close();
+//
+//						url = outputFile.toURI().toURL();
+//						stream = url.openStream();
+//						int finalFileSize = stream.available();
+//						stream.close();
+//
+//						if (finalFileSize != 0
+//								&& finalFileSize < initialFileSize) {
+//							if (file.delete()) {
+//								boolean rename = outputFile.renameTo(file);
+//								if (rename) {
+//									float reduction = (100f - 100f
+//											* (float) finalFileSize
+//											/ (float) initialFileSize);
+//
+//									publish(String.format("%.2f", reduction)
+//											+ " % reduction\n");
+//								} else {
+//									publish(" couldn't cleanup\n");
+//								}
+//							} else {
+//								publish(" couldn't cleanup\n");
+//							}
+//						} else {
+//							publish("0 % reduction\n");
+//							outputFile.delete();
+//						}
+//					} else {
+//						System.out.println("Result : " + result);
+//						publish(" aborted.\n");
+//					}
+//				} catch (InterruptedException e) {
+//					e.printStackTrace();
+//					publish(" aborted.\n");
+//				}
+//			} catch (IOException e) {
+//				e.printStackTrace();
+//				publish(" aborted.\n");
+//			}
+//		}
+//	}
 
 	private void pngout() throws Exception {
 		if (file.getName().endsWith(".png")) {
-			publish("- " + file.getName() + "...");
+			status.setStatus(Status.INPROGRESS);
+			publish(status);
 			String originalName = file.getAbsolutePath();
 			File tempFile = File.createTempFile("tempPng",
 					Long.toString(System.currentTimeMillis()));
@@ -191,33 +197,41 @@ public class PNGCrusher extends SwingWorker<String, String> {
 											* (float) finalFileSize
 											/ (float) initialFileSize);
 
-									publish(String.format("%.2f", reduction)
-											+ " % reduction\n");
+									status.setReduction(reduction);
+									status.setStatus(Status.FINISH);
+//									publish(String.format("%.2f", reduction)
+//											+ " % reduction\n");
 								} else {
-									publish(" couldn't cleanup\n");
+									status.setStatus(Status.ERROR);
 								}
 							} else {
-								publish(" couldn't cleanup\n");
+								status.setStatus(Status.ERROR);
 							}
 						} else {
-							publish("0 % reduction\n");
+							status.setReduction(0f);
+							status.setStatus(Status.FINISH);
 							outputFile.delete();
 						}
 					} else if (result == 2) {
-						publish("0 % reduction\n");
+						status.setReduction(0f);
+						status.setStatus(Status.FINISH);
 						outputFile.delete();
 					} else {
 						System.out.println("Result : " + result);
-						publish(" aborted.\n");
+						status.setStatus(Status.ERROR);
 					}
 				} catch (InterruptedException e) {
 					e.printStackTrace();
-					publish(" aborted.\n");
+					status.setStatus(Status.ERROR);
 				}
 			} catch (IOException e) {
 				e.printStackTrace();
-				publish(" aborted.\n");
+				status.setStatus(Status.ERROR);
 			}
+		} else {
+			status.setStatus(Status.ERROR);
 		}
+
+		publish(status);
 	}
 }
