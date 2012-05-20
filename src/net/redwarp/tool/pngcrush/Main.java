@@ -17,8 +17,6 @@
  */
 package net.redwarp.tool.pngcrush;
 
-import java.io.IOException;
-
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
@@ -38,11 +36,5 @@ public class Main {
 		}
 		DropFrame frame = new DropFrame();
 		frame.setVisible(true);
-
-		try {
-			System.out.println(Extractor.extractResource("/bin/pngout_07_02_2011.exe"));
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 	}
 }

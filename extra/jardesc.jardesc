@@ -12,6 +12,7 @@
     </manifest>
     <selectedElements exportClassFiles="true" exportJavaFiles="false" exportOutputFolder="false">
         <javaElement handleIdentifier="=PNGOptim/src"/>
-        <javaElement handleIdentifier="=PNGOptim/res"/>
+        <file path="/PNGOptim/res/bin/pngout_07_02_2011.exe"/>
+        <javaElement handleIdentifier="=PNGOptim/res&lt;img"/>
     </selectedElements>
 </jardesc>

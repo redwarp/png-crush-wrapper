@@ -45,7 +45,6 @@ public class Extractor {
 			source = domain.getCodeSource();
 			url = source.getLocation();
 			uri = url.toURI();
-			System.out.println(uri);
 			File exe = new File(uri);
 			if (exe.isDirectory()) {
 				return Extractor.class.getResource(path).getPath();

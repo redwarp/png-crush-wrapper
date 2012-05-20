@@ -20,6 +20,7 @@ package net.redwarp.tool.pngcrush;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.ComponentOrientation;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.Toolkit;
@@ -40,6 +41,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ScrollPaneConstants;
@@ -48,6 +50,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
 
 import net.iharder.dnd.FileDrop;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 public class DropFrame extends JFrame {
 	JButton arrow;
@@ -57,6 +61,7 @@ public class DropFrame extends JFrame {
 	JFileChooser fileChooser;
 	ImageIcon blueArrow;
 	ImageIcon redArrow;
+	JPopupMenu tablePopupMenu;
 
 	public DropFrame() {
 		fileChooser = new JFileChooser();
@@ -86,6 +91,7 @@ public class DropFrame extends JFrame {
 		setIconImage(Toolkit.getDefaultToolkit().getImage(
 				DropFrame.class.getResource("/img/blue-go-down-th.png")));
 		setLocation(50, 50);
+		setTitle("PNGOptim");
 
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		getContentPane().setLayout(new BorderLayout(0, 0));
@@ -120,6 +126,23 @@ public class DropFrame extends JFrame {
 		dropZone.add(arrow);
 
 		JPanel rightPanel = new JPanel();
+		
+		MouseAdapter adapter = new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent e) {
+				if(e.isPopupTrigger()){
+					tablePopupMenu.show(e.getComponent(), e.getX(), e.getY());
+				}
+			}
+			
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				if(e.isPopupTrigger()){
+					tablePopupMenu.show(e.getComponent(), e.getX(), e.getY());
+				}
+			}
+		};
+		
 		getContentPane().add(rightPanel, BorderLayout.CENTER);
 		rightPanel.setLayout(new BorderLayout(0, 0));
 
@@ -127,28 +150,42 @@ public class DropFrame extends JFrame {
 		table.setRowSelectionAllowed(false);
 		model = new ResultTableModel();
 		table.setModel(model);
+		
+		tablePopupMenu = new JPopupMenu();
+		JMenuItem clearAction = new JMenuItem("Clear");
+		clearAction.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				clear();
+			}
+		});
+		clearAction.setIcon(new ImageIcon(DropFrame.class.getResource("/img/clear.png")));
+		tablePopupMenu.add(clearAction);
 
 		table.getColumnModel().getColumn(0).setPreferredWidth(200);
+		table.addMouseListener(adapter);
 
 		JScrollPane scrollPane = new JScrollPane(table);
 		scrollPane
 				.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 		rightPanel.add(scrollPane);
+		scrollPane.addMouseListener(adapter);
 
-		new FileDrop<JPanel>(dropZone, null, new FileDrop.Listener<JPanel>() {
+		new FileDrop<Container>(getContentPane(), null, new FileDrop.Listener<Container>() {
 
 			@Override
-			public void filesDropped(JPanel source, File[] files) {
+			public void filesDropped(Container source, File[] files) {
 				handleFileList(files);
 			}
 
 			@Override
-			public void dragEnter(JPanel source) {
+			public void dragEnter(Container source) {
 				arrow.setSelected(true);
 			}
 
 			@Override
-			public void dragExit(JPanel source) {
+			public void dragExit(Container source) {
 				arrow.setSelected(false);
 			}
 		});
@@ -170,11 +207,10 @@ public class DropFrame extends JFrame {
 		panel = new JPanel();
 		getContentPane().add(panel, BorderLayout.SOUTH);
 		panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
-
-		bruteForce = new JCheckBox("Brute force");
-		panel.add(bruteForce);
-		bruteForce.setEnabled(false);
-		bruteForce.setSelected(true);
+		
+		recursiveBox = new JCheckBox("Recursive");
+		recursiveBox.setToolTipText("If checked, will recursively try to find PNG files in folders and subfolders droped on the window");
+		panel.add(recursiveBox);
 
 		horizontalGlue = Box.createHorizontalGlue();
 		panel.add(horizontalGlue);
@@ -189,7 +225,6 @@ public class DropFrame extends JFrame {
 
 			@Override
 			public void onTasksStart() {
-				System.out.println("Started");
 				SwingUtilities.invokeLater(new Runnable() {
 					
 					@Override
@@ -201,7 +236,6 @@ public class DropFrame extends JFrame {
 
 			@Override
 			public void onTasksFinish() {
-				System.out.println("Stopped");
 				SwingUtilities.invokeLater(new Runnable() {
 					
 					@Override
@@ -214,7 +248,6 @@ public class DropFrame extends JFrame {
 	}
 
 	private static final long serialVersionUID = 2909819674605164461L;
-	private JCheckBox bruteForce;
 	private JMenuBar menuBar;
 	private JMenu mnFile;
 	private JMenuItem menuOpen;
@@ -224,9 +257,10 @@ public class DropFrame extends JFrame {
 	private Component horizontalGlue;
 	private JLabel appStatus;
 	private Component horizontalStrut;
+	private JCheckBox recursiveBox;
 
 	private void crushPNGFile(OperationStatus status) {
-		PNGCrusher crusher = new PNGCrusher(status, bruteForce.isSelected()) {
+		PNGCrusher crusher = new PNGCrusher(status, false) {
 			protected void process(java.util.List<OperationStatus> chunks) {
 				for (OperationStatus operation : chunks) {
 					// console.append(string);
@@ -244,16 +278,16 @@ public class DropFrame extends JFrame {
 				crushPNGFile(status);
 			} else if (file.isDirectory()) {
 				File[] list = file.listFiles(new FilenameFilter() {
-
 					@Override
 					public boolean accept(File file, String name) {
-						return name.endsWith(".png");
+						if(recursiveBox.isSelected()){
+							return (name.endsWith(".png") || (file.isDirectory() && !".".equals(name) && !"..".equals(name)));
+						} else {
+							return name.endsWith(".png");
+						}
 					}
 				});
-				for (File subFile : list) {
-					OperationStatus status = model.addFile(subFile);
-					crushPNGFile(status);
-				}
+				handleFileList(list);
 			}
 		}
 	}
@@ -265,5 +299,9 @@ public class DropFrame extends JFrame {
 			File[] fileList = fileChooser.getSelectedFiles();
 			handleFileList(fileList);
 		}
+	}
+	
+	private void clear(){
+		model.clear();
 	}
 }

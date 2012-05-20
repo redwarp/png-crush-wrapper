@@ -38,11 +38,11 @@ public class OperationStatus {
 			return file;
 		}
 
-		public Status getStatus() {
+		public synchronized Status getStatus() {
 			return status;
 		}
 
-		public void setStatus(Status status) {
+		public synchronized void setStatus(Status status) {
 			this.status = status;
 		}
 

@@ -19,22 +19,21 @@ package net.redwarp.tool.pngcrush;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.table.AbstractTableModel;
 
+import net.redwarp.tool.pngcrush.OperationStatus.Status;
+
 public class ResultTableModel extends AbstractTableModel {
 	private static final long serialVersionUID = -4059036865713964056L;
-	
+
 	List<OperationStatus> operations;
-	String[] columnsName = new String[]{
-			"File name", "Status", "Reduction"
-	};
+	String[] columnsName = new String[] { "File name", "Status", "Reduction" };
 
 	public ResultTableModel() {
 		operations = new ArrayList<OperationStatus>();
-		
-		
 	}
 
 	@Override
@@ -44,50 +43,75 @@ public class ResultTableModel extends AbstractTableModel {
 
 	@Override
 	public int getRowCount() {
-		return operations.size();
+		synchronized (operations) {
+			return operations.size();
+		}
 	}
 
 	@Override
 	public Object getValueAt(int row, int col) {
-		OperationStatus operation = operations.get(row);
-		if (col == 0) {
-			return operation.getFile().getName();
-		} else if (col == 1) {
-			switch (operation.getStatus()) {
-			case PENDING:
-				return "Pending...";
-			case INPROGRESS:
-				return "Crunching...";
-			case ERROR:
-				return "Error !";
-			default:
-				return "Finish !";
+		synchronized (operations) {
+			OperationStatus operation = operations.get(row);
+			if (col == 0) {
+				return operation.getFile().getName();
+			} else if (col == 1) {
+				switch (operation.getStatus()) {
+				case PENDING:
+					return "Pending...";
+				case INPROGRESS:
+					return "Crunching...";
+				case ERROR:
+					return "Error !";
+				default:
+					return "Finish !";
+				}
+			} else {
+				if(operation.getStatus() == Status.FINISH){
+					return (String.format("%.2f", operation.getReduction()) + " %");
+				} else {
+					return ("...");
+				}
 			}
-		} else {
-			return (String.format("%.2f", operation.getReduction())
-			+ " % reduction\n");
 		}
 	}
-	
-	public void notifyChange(OperationStatus operation){
-		int row = operations.indexOf(operation);
-		if(row != -1){
-			fireTableCellUpdated(row, 1);
-			fireTableCellUpdated(row, 2);
+
+	public void notifyChange(OperationStatus operation) {
+		synchronized (operations) {
+			int row = operations.indexOf(operation);
+			if (row != -1) {
+				fireTableCellUpdated(row, 1);
+				fireTableCellUpdated(row, 2);
+			}
 		}
 	}
-	
+
 	@Override
 	public String getColumnName(int column) {
 		return columnsName[column];
 	}
 
 	public OperationStatus addFile(File f) {
-		OperationStatus fileStatus = new OperationStatus(f);
-		operations.add(fileStatus);
-		int rowIndex = operations.size() - 1;
-		fireTableRowsInserted(rowIndex, rowIndex);
+		synchronized (operations) {
+			OperationStatus fileStatus = new OperationStatus(f);
+			operations.add(fileStatus);
+			int rowIndex = operations.size() - 1;
+			fireTableRowsInserted(rowIndex, rowIndex);
 
-		return fileStatus;
+			return fileStatus;
+		}
+	}
+
+	public void clear() {
+		synchronized (operations) {
+			Iterator<OperationStatus> itor = operations.iterator();
+			while(itor.hasNext()){
+				OperationStatus operation = itor.next();
+				Status status = operation.getStatus();
+				if (status == Status.ERROR || status == Status.FINISH) {
+					itor.remove();
+				}
+			}
+		}
+		fireTableDataChanged();
 	}
 }

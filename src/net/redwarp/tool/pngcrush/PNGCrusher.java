@@ -161,7 +161,6 @@ public class PNGCrusher extends SwingWorker<Void, OperationStatus> {
 				cmd = pngOutPath + " " + '"' + originalName + "\" \""
 						+ outputName + '"';
 
-				System.out.println(cmd);
 				Process proc = Runtime.getRuntime().exec(cmd);
 
 				StreamGobbler outputGobbler = new StreamGobbler(
@@ -217,7 +216,7 @@ public class PNGCrusher extends SwingWorker<Void, OperationStatus> {
 						status.setStatus(Status.FINISH);
 						outputFile.delete();
 					} else {
-						System.out.println("Result : " + result);
+						System.err.println("Result : " + result);
 						status.setStatus(Status.ERROR);
 					}
 				} catch (InterruptedException e) {

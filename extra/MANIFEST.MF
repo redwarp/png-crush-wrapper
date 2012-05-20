@@ -1,2 +1,2 @@
-Manifest-Version: 1.2.1
+Manifest-Version: 1.2.2
 Main-Class: net.redwarp.tool.pngcrush.Main
