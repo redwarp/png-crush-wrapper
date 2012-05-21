@@ -1,3 +1,6 @@
 /.settings
 /PNGOptim.jar
 /bin
+/proguard
+/myapplication.map
+/PNGOptim_proguard.jar

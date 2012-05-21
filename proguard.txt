@@ -1,0 +1,13 @@
+-injars       PNGOptim.jar
+-outjars      PNGOptim_proguard.jar
+-libraryjars  <java.home>/lib/rt.jar
+-printmapping myapplication.map
+
+-optimizationpasses 3
+-overloadaggressively
+-repackageclasses ''
+-allowaccessmodification
+
+-keep public class net.redwarp.tool.pngcrush.Main {
+    public static void main(java.lang.String[]);
+}
